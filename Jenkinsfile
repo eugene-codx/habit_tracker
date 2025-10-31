@@ -98,7 +98,7 @@ pipeline {
                             ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" \
                                 "${SSH_USER}@${SERVER_IP}" \
                                 "cd \\"${REMOTE_DIR_DEV}\\" && \
-                                docker-compose down --volumes --remove-orphans --timeout 30"
+                                docker compose down --volumes --remove-orphans --timeout 30"
                         '''
                         // 5.1 Start DEV containers
                         sh '''
@@ -108,7 +108,7 @@ pipeline {
                                 echo '$GITHUB_TOKEN' | docker login ghcr.io -u '$GITHUB_USER' --password-stdin
                                 cd '$REMOTE_DIR_DEV'
                                 docker pull '$DOCKER_COM_IMAGE/$APP_NAME:$DOCKER_TAG'
-                                docker-compose up -d
+                                docker compose up -d
                             "
                         '''
                     }
@@ -181,7 +181,7 @@ pipeline {
                             ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" \
                                 "${SSH_USER}@${SERVER_IP}" \
                                 "cd \\"${REMOTE_DIR_PROD}\\" && \
-                                docker-compose down --volumes --remove-orphans --timeout 30"
+                                docker compose down --volumes --remove-orphans --timeout 30"
                         '''
                         // 5.2 Start PROD containers
                         sh '''
@@ -191,7 +191,7 @@ pipeline {
                                 echo '$GITHUB_TOKEN' | docker login ghcr.io ghcr.io -u '$GITHUB_USER' --password-stdin
                                 cd '$REMOTE_DIR_PROD'
                                 docker pull '$DOCKER_COM_IMAGE/$APP_NAME:$DOCKER_TAG'
-                                docker-compose up -d
+                                docker compose up -d
                             "
                         '''
                     }

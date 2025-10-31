@@ -1,0 +1,29 @@
+services:
+  app:
+    image: ghcr.io/eugene-codx/habit_be:latest
+    volumes:
+      - ./static:/app/static
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./.env:/.env
+    env_file:
+      - ./.env
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      ALGORITHM: ${ALGORITHM}
+      UVICORN_PORT: ${UVICORN_PORT}
+    ports:
+      - "${UVICORN_PORT}:${UVICORN_PORT}"
+    restart:
+        always
+    entrypoint: /app/entrypoint.sh
+    networks:
+      - backend
+
+volumes:
+  static:
+    driver: local
+
+networks:
+  backend:
+    external: true

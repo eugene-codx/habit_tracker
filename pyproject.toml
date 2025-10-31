@@ -1,0 +1,55 @@
+[project]
+name = "framework_aqa_pytest"
+version = "0.1.0"
+description = "Automation testing framework based on Python and Pytest"
+authors = [
+    { name = "Eugene N. Schneider", email = "Eugene.N.Schneider@gmail.com" }
+]
+requires-python = ">=3.12"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
+[project.optional-dependencies]
+dev = [
+    "pre-commit>=4.1.0",
+    "black>=25.1.0",
+    "ruff>=0.11.13",
+    "bandit>=1.8.3",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = [".venv", "venv", ".env"]
+
+[tool.ruff.lint]
+select = [
+    "E", # pycodestyle
+    "F", # pyflakes
+    "B", # flake8-bugbear
+    "I", # isort
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+    "RUF", # ruff-specific
+    "PTH", # flake8-use-pathlib
+    "SIM", # flake8-simplify
+    "TCH", # flake8-type-checking
+    "TID", # flake8-tidy-imports
+    "ERA", # eradicate
+]
+ignore = ["I001"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["framework_aqa_pytest"]
+lines-between-types = 1
+
+[tool.black]
+line-length = 120
+
+[tool.bandit]
+exclude_dirs = [".venv", "venv", ".env"]
+skips = ["B101"]
+targets = ["framework_aqa_pytest"]

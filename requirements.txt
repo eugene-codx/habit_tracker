@@ -1,0 +1,16 @@
+SQLAlchemy==2.0.35
+aiosqlite==0.20.0
+alembic==1.13.3
+asyncpg==0.30.0
+bcrypt==4.0.1
+fastapi[all]==0.115.12
+jinja2==3.1.6
+loguru==0.7.2
+passlib[bcrypt]==1.7.4
+pre-commit==4.2.0
+psycopg2-binary==2.9.10
+pydantic==2.9.2
+pydantic[email]
+pydantic_settings==2.5.2
+python-jose==3.4.0
+uvicorn==0.31.0

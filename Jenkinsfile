@@ -138,7 +138,7 @@ pipeline {
                 script {
                     // Retrieve .env and SSH key from Jenkins Credentials
                     withCredentials([
-                        file(credentialsId: 'ENV_PROD_Awakeia', variable: 'SECRET_ENV_FILE_PROD'),
+                        file(credentialsId: 'ENV_PROD_habit', variable: 'SECRET_ENV_FILE_PROD'),
                         sshUserPrivateKey(
                             credentialsId: 'PSUSERDEPLOY_SSH',
                             keyFileVariable: 'SSH_KEY',

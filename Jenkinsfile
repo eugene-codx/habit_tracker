@@ -1,22 +1,13 @@
 pipeline {
     agent { label 'agent1' }
     environment {
-        REPO_URL = credentials('REPO_URL_DEV')
-        SERVER_IP = credentials('SERVER_IP_DEV')
+        REPO_URL = credentials('REPO_URL')
+        SERVER_IP = credentials('SERVER_IP')
         REMOTE_DIR_DEV = credentials('REMOTE_DIR_DEV')
         REMOTE_DIR_PROD = credentials('REMOTE_DIR_PROD')
-
-        // GitHub Container Registry settings
-        DOCKER_REGISTRY = "ghcr.io"
-        DOCKER_NAMESPACE = "eugene-codx"
-        DOCKER_IMAGE_NAME = "habit_be"
-
-        // Динамический тег: номер билда + короткий hash коммита
-        DOCKER_TAG = "${env.BUILD_NUMBER}-${env.GIT_COMMIT?.take(7) ?: 'latest'}"
-        DOCKER_TAG_LATEST = "latest"
-
+        DOCKER_COM_IMAGE = "ghcr.io/eugene-codx"
+        DOCKER_TAG = "latest"
         APP_NAME = 'habit_be'
-        FULL_IMAGE_NAME = "${DOCKER_REGISTRY}/${DOCKER_NAMESPACE}/${DOCKER_IMAGE_NAME}"
     }
     triggers {
         githubPush()
@@ -46,14 +37,14 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    appImage = docker.build("${DOCKER_REGISTRY}/${DOCKER_NAMESPACE}/${DOCKER_IMAGE_NAME}:${DOCKER_TAG}")
+                    appImage = docker.build("${DOCKER_COM_IMAGE}/${APP_NAME}:${DOCKER_TAG}")
                 }
             }
         }
         stage('Push to GitHub Container Registry') {
             steps {
                 script {
-                    docker.withRegistry("https://${DOCKER_REGISTRY}", 'GITHUB_CONTAINER_REGISTRY_TOKEN') {
+                    docker.withRegistry('https://ghcr.io', 'GITHUB_CONTAINER_REGISTRY_TOKEN') {
                         appImage.push()
                     }
                 }
@@ -71,9 +62,9 @@ pipeline {
                             usernameVariable: 'SSH_USER'
                         ),
                         usernamePassword(
-                            credentialsId: 'DOCKER_HUB_CREDENTIALS',
-                            usernameVariable: 'DOCKER_USER',
-                            passwordVariable: 'DOCKER_PASS'
+                            credentialsId: 'GITHUB_TOKEN_CREDENTIALS',
+                            usernameVariable: 'GITHUB_USER',
+                            passwordVariable: 'GITHUB_TOKEN'
                         )
                     ]) {
                         // DEVELOPMENT
@@ -113,10 +104,10 @@ pipeline {
                         sh '''
                             ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" \
                                 "${SSH_USER}@${SERVER_IP}" "
-                                # Log in to Docker Hub
-                                echo '$DOCKER_PASS' | docker login -u '$DOCKER_USER' --password-stdin
+                                # Log in to GitHub docker registry
+                                echo '$GITHUB_TOKEN' | docker login ghcr.io -u '$GITHUB_USER' --password-stdin
                                 cd '$REMOTE_DIR_DEV'
-                                docker pull '$DOCKER_REGISTRY/$DOCKER_NAMESPACE/$DOCKER_IMAGE_NAME:$DOCKER_TAG'
+                                docker pull '$DOCKER_COM_IMAGE/$APP_NAME:$DOCKER_TAG'
                                 docker-compose up -d
                             "
                         '''
@@ -132,7 +123,7 @@ pipeline {
                 echo "Triggering external QA Job..."
                 // Run another Job and wait for it to finish
                 script {
-                    def qaBuild = build job: 'habit_AT',
+                    def qaBuild = build job: 'Habit_AT',
                                          wait: true,            // wait for completion
                                          propagate: true        // if it fails, the current pipeline fails too
                     echo "QA Job finished with status: ${qaBuild.getResult()}"
@@ -147,16 +138,16 @@ pipeline {
                 script {
                     // Retrieve .env and SSH key from Jenkins Credentials
                     withCredentials([
-                        file(credentialsId: 'ENV_PROD_habit', variable: 'SECRET_ENV_FILE_PROD'),
+                        file(credentialsId: 'ENV_PROD_Awakeia', variable: 'SECRET_ENV_FILE_PROD'),
                         sshUserPrivateKey(
                             credentialsId: 'PSUSERDEPLOY_SSH',
                             keyFileVariable: 'SSH_KEY',
                             usernameVariable: 'SSH_USER'
                         ),
                         usernamePassword(
-                            credentialsId: 'DOCKER_HUB_CREDENTIALS',
-                            usernameVariable: 'DOCKER_USER',
-                            passwordVariable: 'DOCKER_PASS'
+                            credentialsId: 'GITHUB_TOKEN_CREDENTIALS',
+                            usernameVariable: 'GITHUB_USER',
+                            passwordVariable: 'GITHUB_TOKEN'
                         )
                     ]) {
                         // PRODUCTION
@@ -196,10 +187,10 @@ pipeline {
                         sh '''
                             ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" \
                                 "${SSH_USER}@${SERVER_IP}" "
-                                # Log in to Docker Hub
-                                echo '$DOCKER_PASS' | docker login -u '$DOCKER_USER' --password-stdin
+                                # Log in to GitHub docker registry
+                                echo '$GITHUB_TOKEN' | docker login ghcr.io ghcr.io -u '$GITHUB_USER' --password-stdin
                                 cd '$REMOTE_DIR_PROD'
-                                docker pull '$DOCKER_REGISTRY/$DOCKER_NAMESPACE/$DOCKER_IMAGE_NAME:$DOCKER_TAG'
+                                docker pull '$DOCKER_COM_IMAGE/$APP_NAME:$DOCKER_TAG'
                                 docker-compose up -d
                             "
                         '''

@@ -44,7 +44,7 @@ pipeline {
         stage('Push to GitHub Container Registry') {
             steps {
                 script {
-                    docker.withRegistry('https://ghcr.io', 'GITHUB_CONTAINER_REGISTRY_TOKEN') {
+                    docker.withRegistry('https://ghcr.io', 'GITHUB_TOKEN_CREDENTIALS') {
                         appImage.push()
                     }
                 }
